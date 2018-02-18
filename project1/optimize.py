@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import scipy.optimize as spo
+import matplotlib.pyplot as plt
 
 # Get daily portfolio value given daily prices for each stock in portfolio
 def portfolio_values(prices, allocation, start_val=1):
@@ -69,6 +70,14 @@ def find_optimal_allocation(portfolio_prices):
     allocs = result.x
     return allocs
 
+def plot_normalized_data(df, title="Normalized prices", xlabel="Date", ylabel="Normalized prices"):
+    df = df/df.ix[0]
+    ax = df.plot(title = title)
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.grid(True, "both")
+    plt.show()
+
 def run_optimization(symbols, start_date, end_date):
     dates = pd.date_range(start_date, end_date)
     all_prices = get_data(symbols, dates)
@@ -85,8 +94,12 @@ def run_optimization(symbols, start_date, end_date):
     # Get Portfolio statistics
     cum_ret, avg_daily_ret, std_daily_ret, sharpe_ratio = portfolio_stats(port_val)
 
-    print(start_date)
+    print("Start Date: {} , End Date: {} , Symbols: {}".format(start_date, end_date, symbols))
+    print("Allocations: {}, Sharpe Ratio: {}, Volaatility: {}".format(allocations, sharpe_ratio, std_daily_ret))
+    print("Average Daily Return: {} , Cumulative Return: {}".format(avg_daily_ret, cum_ret))
 
+    df_temp = pd.concat([port_val, spy_prices], keys=["Portfolio", "SPY"], axis=1)
+    plot_normalized_data(df_temp, title="Daily portfolio value vs SPY")
 
 
 # Problem is, given a set of stocks, start and end date, maximize by Sharpe Ratio
